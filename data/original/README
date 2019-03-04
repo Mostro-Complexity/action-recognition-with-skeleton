@@ -1,0 +1,112 @@
+------------------------ CAD-60: Cornell Activity Dataset 60 -----------------------
+
+    == How to reference CAD-60 dataset ==
+
+We would appreciate it if you cite our works when using the dataset:
+
+ Human Activity Detection from RGBD Images, Jaeyong Sung, Colin Ponce, Bart
+ Selman, Ashutosh Saxena. In AAAI workshop on Pattern, Activity and Intent
+ Recognition (PAIR), 2011. 
+
+BibTeX:
+
+@inproceedings{sung_rgbdactivity_2011,
+    title={Human Activity Detection from RGBD Images},
+    author={Jaeyong Sung and Colin Ponce and Bart Selman and Ashutosh Saxena},
+    booktitle={Association for the Advancement of Artificial Intelligence (AAAI) workshop 
+               on Pattern, Activity and Intent Recognition},
+    year={2011}
+}
+
+
+    == Contacts ==
+
+Jaeyong Sung    jysung at cs.cornell.edu
+
+
+    == State of the art results ==
+
+Check out state of the art results on CAD-60 dataset at:
+        http://pr.cs.cornell.edu/humanactivities/results.php
+
+
+    == CAD-60 Dataset ==
+
+Each zipped directory contains following four types of files collected from one person. 
+
+1) activityLabel.txt
+- A file that maps each # to corresponding activity. (# is a ten-digit integer)
+           
+2) #.txt                 
+- Skeleton data files.
+- Skeleton data format details are in the next section of this README.
+
+3) #/Depth_X.png                   
+- Depth data file corresponding to frame number X of skeleton data (#.txt).
+- (single channel 16-bit PNG)
+           
+4) #/RGB_X.png                    
+- RGB data file corresponding to frame number X of skeleton data (#.txt).
+- (three channel 8-bit PNG)
+
+
+
+    == Skeleton Data Format ==
+
+Skeleton data consists of 15 joints. There are 11 joints that have both 
+joint orientation and joint position. And, 4 joints that only have joint
+position. Each row follows the following format.
+
+  Frame#,ORI(1),P(1),ORI(2),P(2),...,P(11),J(11),P(12),...,P(15)
+    
+    Frame# => integer starting from 1
+    
+    ORI(i) => orientation of ith joint
+                0 1 2
+                3 4 5
+                6 7 8
+              3x3 matrix is stored as followed by CONF
+                0,1,2,3,4,5,6,7,8,CONF
+              Read NITE PDF (see below) to get more detail about the matrix
+                
+    P(i)   => position of ith joint followed by CONF
+                x,y,z,CONF
+              values are in milimeters
+              
+    CONF   => boolean confidence value (0 or 1)
+              Read NITE PDF (see below) to get more detail about the confidence value
+    
+  Joint number -> Joint name
+     1 -> HEAD
+     2 -> NECK
+     3 -> TORSO
+     4 -> LEFT_SHOULDER
+     5 -> LEFT_ELBOW
+     6 -> RIGHT_SHOULDER
+     7 -> RIGHT_ELBOW
+     8 -> LEFT_HIP
+     9 -> LEFT_KNEE
+    10 -> RIGHT_HIP
+    11 -> RIGHT_KNEE
+    12 -> LEFT_HAND
+    13 -> RIGHT_HAND
+    14 -> LEFT_FOOT
+    15 -> RIGHT_FOOT
+    
+Read page 10~13 of NITE 1.3 PDF for more detail on skeleton orientation, 
+position, and confidence values.
+
+NITE 1.3 PDF available at http://pr.cs.cornell.edu/humanactivities/data/NITE.pdf
+
+
+        
+    == Misc ==
+
+Here are two useful equation that can be used to convert (x,y,z) coordinate into (x,y) pixel
+number in 2D image approximately. Given the (x,y,z) location of the joint, you can find where
+the joint is located within RGBD images.
+
+x = 156.8584456124928 + 0.0976862095248 * x - 0.0006444357104 * y + 0.0015715946682 * z
+y = 125.5357201011431 + 0.0002153447766 * x - 0.1184874093530 * y - 0.0022134485957 * z
+
+
