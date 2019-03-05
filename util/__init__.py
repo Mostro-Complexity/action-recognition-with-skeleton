@@ -80,6 +80,14 @@ ACTION_FILE_NAMES = {
 
 
 def normalization(f_cc, f_cp, f_ci):
+    """Normalize f_cc, f_cp, f_ci to [-1,1]
+
+    `f_cc` : f_cc feature of N samples. `shape`=`(N,)`  
+    `f_cp` : f_cp feature of N samples. `shape`=`(N,)`  
+    `f_ci` : f_ci feature of N samples. `shape`=`(N,)`  
+    `return` : `f_cc`, `f_cp`, `f_ci` after normalization. `shape`=`(N,)`
+    """
+
     scaler = MinMaxScaler(feature_range=(-1, 1))
 
     f_cc_std = scaler.fit_transform(f_cc)
@@ -89,6 +97,13 @@ def normalization(f_cc, f_cp, f_ci):
 
 
 def extract_feature(joints):
+    """Extract feature from single sample.  
+    N is the number of sample.  
+    
+    `joints` : Time sequence of skeleton. shape=(T, joint_num, coordinate_dim)  
+
+    `return` : `f_cc`, `f_cp`, `f_ci`. shape=(N,)  
+    """
     frame_num, joint_num, _ = joints.shape
 
     f_cc = np.zeros((frame_num, int(comb(joint_num, 2)), 3), dtype=np.float32)
@@ -117,6 +132,14 @@ def extract_feature(joints):
 
 
 def scatter_samples(x, sample_size, step):
+    """Scatter the big sample to smaller one.
+
+    N is the number of sample.  
+    `x` : Array of original samples. `shape`=`(N,)`  
+    `sample_size` : New sample size. `type`=`int`  
+    `step` : How many steps to sampling. `type`=`int`  
+    `return` : labels and new samples. `shape`=`(M,)`
+    """
     labels, samples = [], []
     for k in x:
         sample = x[k]
@@ -130,6 +153,13 @@ def scatter_samples(x, sample_size, step):
 
 
 def split_dataset(y, x, ratio):
+    """Divide dataset into training set and test set.  
+     
+    `y` : Array of labals. `shape`=`(N,)`  
+    `x` : Array of samples. `shape`=`(N,)`  
+    `ratio` : Proportion of test sets. `type`=`int`  
+    `return` : (`y_test`, `x_test`, `y_train`, `x_train`) 
+    """
     x_test, y_test = [], []
     x_train, y_train = [], []
     class_num = np.max(y) + 1
@@ -149,6 +179,14 @@ def split_dataset(y, x, ratio):
 
 
 def train_and_save(features, labels, path):
+    """Train and save the model.  
+
+    N is the number of sample.  
+    `features` : Array of features. `shape`=`(N,)`  
+    `labels` : Array of labels. `shape`=`(N,)`  
+    `path` : Path to save the model. `type`=`str`  
+    `return` : `model` has been trained.
+    """
     # Create a Gaussian Classifier
     weights = compute_sample_weight('balanced', labels)
     model = GaussianNB()
@@ -161,6 +199,7 @@ def train_and_save(features, labels, path):
 
 
 def mark_labels(indices):
+    """Convert filename to text label"""
     mapped = [ACTION_FILE_NAMES[indices[i]] for i in range(indices.size)]
 
     return np.array(mapped)
