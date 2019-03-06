@@ -18,6 +18,13 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": ["--input-dir", "data/input", "--load-model"]
+        },        {
+            "name": "train model with online learning",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--input-dir", "data/input", "--load-model","--partial-fit"]
         },
         {
             "name": "Python: Module",

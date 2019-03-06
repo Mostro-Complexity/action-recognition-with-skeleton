@@ -8,8 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from sklearn.utils.class_weight import compute_sample_weight
-
+from sklearn.utils import shuffle
 
 ACTION_FILE_NAMES = {
     '0510160858': 'still',
@@ -99,7 +98,7 @@ def normalization(f_cc, f_cp, f_ci):
 def extract_feature(joints):
     """Extract feature from single sample.  
     N is the number of sample.  
-    
+
     `joints` : Time sequence of skeleton. shape=(T, joint_num, coordinate_dim)  
 
     `return` : `f_cc`, `f_cp`, `f_ci`. shape=(N,)  
@@ -153,8 +152,8 @@ def scatter_samples(x, sample_size, step):
 
 
 def split_dataset(y, x, ratio):
-    """Divide dataset into training set and test set.  
-     
+    """Divide dataset into training set and test set and shuffle samples.  
+
     `y` : Array of labals. `shape`=`(N,)`  
     `x` : Array of samples. `shape`=`(N,)`  
     `ratio` : Proportion of test sets. `type`=`int`  
@@ -175,27 +174,9 @@ def split_dataset(y, x, ratio):
             y_test.append(_y_test[j])
             x_test.append(_x_test[j, :, :])
 
-    return np.array(y_test), np.array(x_test), np.array(y_train), np.array(x_train)
-
-
-def train_and_save(features, labels, path):
-    """Train and save the model.  
-
-    N is the number of sample.  
-    `features` : Array of features. `shape`=`(N,)`  
-    `labels` : Array of labels. `shape`=`(N,)`  
-    `path` : Path to save the model. `type`=`str`  
-    `return` : `model` has been trained.
-    """
-    # Create a Gaussian Classifier
-    weights = compute_sample_weight('balanced', labels)
-    model = GaussianNB()
-    # Train the model using the training sets
-    model.fit(features, labels, sample_weight=weights)
-    #TODO: 使用增量学习
-    pickle.dump(model, open(path, 'wb'))
-
-    return model
+    y_train, x_train = np.array(y_train), np.array(x_train)
+    y_train, x_train = shuffle(y_train, x_train)  # 打乱顺序
+    return np.array(y_test), np.array(x_test), y_train, x_train
 
 
 def mark_labels(indices):
