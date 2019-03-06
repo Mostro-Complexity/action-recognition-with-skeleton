@@ -15,15 +15,15 @@ ORIGINAL_DATA_PATH = 'data/original'
 def integrate_features(samples):
     """Convert all samples to features with single time.
 
-    `samples` : sample array, which contains N samples. shape=(N,)  
-    `return` : feature array, which contains N features. shape=(N,) 
+    `samples` : sample array, which contains N samples. shape=(N,)
+    `return` : feature array, which contains N features. shape=(N,)
     """
-    set_size = samples.shape[0]
-    features = []
+    sample_num, frame_num, joint_num, _ = samples.shape
+    n_dim = 200  # PCA降维后的维数
+    features = np.empty((sample_num, frame_num * n_dim), dtype=np.float32)
 
-    for i in range(set_size):  # 对每个训练（测试）样本提取特征
+    for i in range(sample_num):  # 对每个训练（测试）样本提取特征
         example = samples[i]
-        frame_num, joint_num, _ = example.shape
 
         f_cc, f_cp, f_ci = extract_feature(example)
 
@@ -33,21 +33,20 @@ def integrate_features(samples):
         f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
 
         f_norm = np.hstack((f_cc, f_cp, f_ci))
-        f_norm = PCA(n_components=200).fit_transform(f_norm)
-        features.append(f_norm)
+        f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
+        f_norm = f_norm.reshape(-1)
+        features[i] = f_norm
 
-    features = np.array(features)
-    features = features.reshape(features.shape[0], -1)
     return features
 
 
 def train_and_save_once(features, labels, path):
-    """Train and save the model.  
+    """Train and save the model.
 
-    N is the number of sample.  
-    `features` : Array of features. `shape`=`(N,)`  
-    `labels` : Array of labels. `shape`=`(N,)`  
-    `path` : Path to save the model. `type`=`str`  
+    N is the number of sample.
+    `features` : Array of features. `shape`=`(N,)`
+    `labels` : Array of labels. `shape`=`(N,)`
+    `path` : Path to save the model. `type`=`str`
     `return` : `model` has been trained.
     """
     weights = compute_sample_weight('balanced', labels)
@@ -80,13 +79,16 @@ def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
 
 
 def feat_batches_iterator(samples, labels, batch_size=100):
-    set_size = samples.shape[0]
-    partial_features, partial_labels, partial_weights = [], [], []
+    sample_num, frame_num, joint_num, _ = samples.shape
+    n_dim = 200  # PCA降维后的维数
+    partial_features = np.empty(
+        (sample_num, frame_num * n_dim), dtype=np.float32)
+    partial_labels = np.empty(sample_num, dtype=np.int32)
+    partial_weights = np.empty(sample_num, dtype=np.float32)
     weights = compute_sample_weight('balanced', labels)
 
-    for i in range(set_size):  # 对每个训练（测试）样本提取特征
+    for i in range(sample_num):  # 对每个训练（测试）样本提取特征
         example = samples[i]
-        frame_num, joint_num, _ = example.shape
 
         f_cc, f_cp, f_ci = extract_feature(example)
 
@@ -96,27 +98,18 @@ def feat_batches_iterator(samples, labels, batch_size=100):
         f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
 
         f_norm = np.hstack((f_cc, f_cp, f_ci))
-        f_norm = PCA(n_components=200).fit_transform(f_norm)
+        f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
 
-        partial_features.append(f_norm)
-        partial_labels.append(labels[i])
-        partial_weights.append(weights[i])
+        partial_features[i % batch_size] = f_norm.reshape(-1)
+        partial_labels[i % batch_size] = labels[i]
+        partial_weights[i % batch_size] = weights[i]
 
         if i % batch_size == 0 and i != 0:
-            partial_features = np.array(partial_features)
-            partial_features = partial_features.reshape(
-                partial_features.shape[0], -1)
-            partial_labels = np.array(partial_labels)
-            partial_weights = np.array(partial_weights)
             yield partial_features, partial_labels, partial_weights
-            partial_features, partial_labels, partial_weights = [], [], []
 
-    partial_features = np.array(partial_features)
-    partial_features = partial_features.reshape(
-        partial_features.shape[0], -1)
-    partial_labels = np.array(partial_labels)
-    partial_weights = np.array(partial_weights)
-    yield partial_features, partial_labels, partial_weights
+    yield (partial_features[0:i % batch_size],
+           partial_labels[0:i % batch_size],
+           partial_weights[0:i % batch_size])
 
 
 if __name__ == "__main__":
