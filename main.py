@@ -66,50 +66,51 @@ def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     model = GaussianNB()
     for i, (x_train, y_train, weights) in enumerate(batches_iter):
         # Train the model using the training sets
-        # for _ in range(50):
         model.partial_fit(X=x_train, y=y_train,
                           classes=classes, sample_weight=weights)
         y_pred = model.predict(x_train)
 
-        print('batch %d has finished, accuracy:%f' %
+        print('Batch %d has finished, accuracy:%f' %
               (i, accuracy_score(y_true=y_train, y_pred=y_pred, normalize=True)))
 
     pickle.dump(model, open(path, 'wb'))
     return model
 
 
-def feat_batches_iterator(samples, labels, batch_size=100):
+def feat_batches_iterator(samples, labels, batch_size=100, iter_times=5):
     sample_num, frame_num, joint_num, _ = samples.shape
     n_dim = 200  # PCA降维后的维数
     partial_features = np.empty(
         (batch_size, frame_num * n_dim), dtype=np.float32)
     partial_labels = np.empty(batch_size, dtype=np.int64)
     partial_weights = np.empty(batch_size, dtype=np.float32)
-    weights = compute_sample_weight('balanced', labels)
 
-    for i in range(sample_num):  # 对每个训练（测试）样本提取特征
-        example = samples[i]
+    for j in range(iter_times):
+        weights = compute_sample_weight('balanced', labels)
+        labels, samples = shuffle(labels, samples)  # 打乱顺序
 
-        f_cc, f_cp, f_ci = extract_feature(example)
+        for i in range(sample_num):  # 对每个训练（测试）样本提取特征
+            f_cc, f_cp, f_ci = extract_feature(samples[i])
 
-        f_cc = f_cc.reshape(f_cc.shape[0], -1)
-        f_cp = f_cp.reshape(f_cp.shape[0], -1)
-        f_ci = f_ci.reshape(f_ci.shape[0], -1)
-        f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
+            f_cc = f_cc.reshape(f_cc.shape[0], -1)
+            f_cp = f_cp.reshape(f_cp.shape[0], -1)
+            f_ci = f_ci.reshape(f_ci.shape[0], -1)
+            f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
 
-        f_norm = np.hstack((f_cc, f_cp, f_ci))
-        f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
+            f_norm = np.hstack((f_cc, f_cp, f_ci))
+            f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
 
-        partial_features[i % batch_size] = f_norm.reshape(-1)
-        partial_labels[i % batch_size] = labels[i]
-        partial_weights[i % batch_size] = weights[i]
+            partial_features[i % batch_size] = f_norm.reshape(-1)
+            partial_labels[i % batch_size] = labels[i]
+            partial_weights[i % batch_size] = weights[i]
 
-        if i % batch_size == 0 and i != 0:
-            yield partial_features, partial_labels, partial_weights
+            if i % batch_size == 0 and i != 0:
+                yield partial_features, partial_labels, partial_weights
 
-    yield (partial_features[0:i % batch_size],
-           partial_labels[0:i % batch_size],
-           partial_weights[0:i % batch_size])
+        print('Iteration %d has finished.' % j)
+        yield (partial_features[0:i % batch_size],
+               partial_labels[0:i % batch_size],
+               partial_weights[0:i % batch_size])
 
 
 if __name__ == "__main__":
@@ -136,19 +137,23 @@ if __name__ == "__main__":
     print('Total classes number:%d' % (np.max(y_train) + 1))
 
     if args.load_model and args.partial_fit:
-        batches_num, batch_size = x_train.shape[0], 1000
-        print('Total batches number:%d' % (batches_num // batch_size + 1))
+        batches_num, batch_size, iter_times = x_train.shape[0], 1000, 5
 
-        iterator = feat_batches_iterator(x_train, y_train, batch_size)
+        print('Total batches number:%d' % (batches_num // batch_size + 1))
+        print('Total iteration times:%d\nStart Training.' % iter_times)
+
+        iterator = feat_batches_iterator(
+            x_train, y_train, batch_size, iter_times)
         model = train_and_save_multiple(iterator, np.unique(
             y_train), 'model/naive_bayes.pkl')
     elif args.load_model:
-        features = integrate_features(x_train)
         model = pickle.load(open('model/naive_bayes.pkl', 'rb'))
+        print('Model loaded.' % iter_times)
+    else:
+        features = integrate_features(x_train)
+        model = train_and_save_once(features, y_train, 'model/naive_bayes.pkl')
         # Predict Output
         y_pred = model.predict(features)
-    else:
-        model = train_and_save_once(features, y_train, 'model/naive_bayes.pkl')
 
     features = integrate_features(x_test)
 

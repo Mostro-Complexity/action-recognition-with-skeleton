@@ -95,7 +95,7 @@ def normalization(f_cc, f_cp, f_ci):
     return f_cc_std, f_cp_std, f_ci_std
 
 
-def extract_feature(joints):
+def extract_feature(joints):  # TODO:使用ctypes加速
     """Extract feature from single sample.  
     N is the number of sample.  
 
@@ -103,6 +103,13 @@ def extract_feature(joints):
 
     `return` : `f_cc`, `f_cp`, `f_ci`. shape=(N,)  
     """
+    # a = np.random.random(100)
+    # a_ctypes_ptr = cast(a.ctypes.data, POINTER(c_double))
+    # np.ctypeslib.as_array(a_ctypes_ptr, shape=(100,))
+
+    # np.ctypeslib.as_array(
+    #     (ctypes.c_double * 100).from_address(ctypes.addressof(a_ctypes_ptr.contents)))
+
     frame_num, joint_num, _ = joints.shape
 
     f_cc = np.zeros((frame_num, int(comb(joint_num, 2)), 3), dtype=np.float32)
@@ -152,7 +159,7 @@ def scatter_samples(x, sample_size, step):
 
 
 def split_dataset(y, x, ratio):
-    """Divide dataset into training set and test set and shuffle samples.  
+    """Divide dataset into training set and test set.  
 
     `y` : Array of labals. `shape`=`(N,)`  
     `x` : Array of samples. `shape`=`(N,)`  
@@ -175,7 +182,6 @@ def split_dataset(y, x, ratio):
             x_test.append(_x_test[j, :, :])
 
     y_train, x_train = np.array(y_train), np.array(x_train)
-    y_train, x_train = shuffle(y_train, x_train)  # 打乱顺序
     return np.array(y_test), np.array(x_test), y_train, x_train
 
 
