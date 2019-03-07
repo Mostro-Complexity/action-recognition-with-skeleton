@@ -8,11 +8,6 @@ The specific process are as follow.
 
 ![动作识别大致流程](principle.png)
 
-## Principle
-具体流程如下图：
-
-![动作识别大致流程](principle.png)
-
 The first step is scatter the dataset 
 which for the different number of images within 
 each class.
@@ -58,6 +53,11 @@ pip install sklearn
 pip install numpy
 pip install scipy
 ```
+
+## Principle
+具体流程如下图：
+
+![动作识别大致流程](principle.png)
 
 # 使用骨架数据进行动作识别
 > 性感模型，在线学习  
