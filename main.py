@@ -82,9 +82,9 @@ def feat_batches_iterator(samples, labels, batch_size=100):
     sample_num, frame_num, joint_num, _ = samples.shape
     n_dim = 200  # PCA降维后的维数
     partial_features = np.empty(
-        (sample_num, frame_num * n_dim), dtype=np.float32)
-    partial_labels = np.empty(sample_num, dtype=np.int32)
-    partial_weights = np.empty(sample_num, dtype=np.float32)
+        (batch_size, frame_num * n_dim), dtype=np.float32)
+    partial_labels = np.empty(batch_size, dtype=np.int64)
+    partial_weights = np.empty(batch_size, dtype=np.float32)
     weights = compute_sample_weight('balanced', labels)
 
     for i in range(sample_num):  # 对每个训练（测试）样本提取特征
