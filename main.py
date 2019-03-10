@@ -11,6 +11,7 @@ from sklearn.utils.class_weight import compute_sample_weight
 from matplotlib.ticker import MultipleLocator
 
 from util import *
+from util.CAD_60 import ACTION_FILE_NAMES
 
 ORIGINAL_DATA_PATH = 'data/original'
 N_DIM = 100      # PCA降维后的维数
