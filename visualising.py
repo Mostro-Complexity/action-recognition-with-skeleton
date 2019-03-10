@@ -24,17 +24,17 @@ if __name__ == "__main__":
     cax = ax.matshow(matrix)
     # fig.colorbar(cax)
     plt.imshow(matrix, interpolation='nearest',
-               cmap=plt.cm.binary, aspect=0.45)
+               cmap=plt.cm.binary, aspect=0.7)
 
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
-                ax.text(i, j, str('%.1f' % matrix[j, i]),
-                        va='center', ha='center', color='white')
+            ax.text(i, j, str('%.1f' % matrix[j, i]),
+                    va='center', ha='center', color='white')
 
     plt.subplots_adjust(left=0.2, right=0.9, top=0.9, bottom=0.2)
     ax.xaxis.set_major_locator(MultipleLocator(1))
     ax.yaxis.set_major_locator(MultipleLocator(1))
-    ax.set_xticklabels(LABELS, rotation=90)
+    ax.set_xticklabels(LABELS, rotation=45)
     ax.set_yticklabels(LABELS)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
@@ -43,4 +43,4 @@ if __name__ == "__main__":
     # plt.title('Confusion Matrix')
     plt.show()
     # save
-    plt.savefig('confusion_matrix.jpg')
+    plt.savefig('fuck.jpg', dpi=200)

@@ -136,7 +136,7 @@ def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
     cax = ax.matshow(matrix)
     # fig.colorbar(cax)
     plt.imshow(matrix, interpolation='nearest',
-               cmap=plt.cm.binary, aspect=0.45)
+               cmap=plt.cm.binary, aspect=0.7)
 
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
@@ -150,7 +150,7 @@ def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
 
     labels = ['']
     labels.extend([label_dict[i] for i in range(len(label_dict))])
-    
+
     plt.subplots_adjust(left=0.2, right=0.9, top=0.9, bottom=0.2)
     ax.xaxis.set_major_locator(MultipleLocator(1))
     ax.yaxis.set_major_locator(MultipleLocator(1))
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     for fn in ACTION_FILE_NAMES.keys():
         dataset[fn] = np.load(os.path.join(args.input_dir, fn + '.npy'))
 
-    y, x = scatter_samples(dataset, 500, 10)  # 大样本分散为小样本
+    y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
     text_labels = mark_labels(y)  # 把编号（文件名）换成标签
     y = LabelEncoder().fit_transform(text_labels)  # 字符串标签转为数字标签
 
