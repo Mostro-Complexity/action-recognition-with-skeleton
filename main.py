@@ -182,6 +182,8 @@ if __name__ == "__main__":
 
     for fn in ACTION_FILE_NAMES.keys():
         dataset[fn] = np.load(os.path.join(args.input_dir, fn + '.npy'))
+        # TODO:输入同一化，统一为pkl文件
+        # TODO:key为类名，value为numpy.ndarray
 
     y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
     text_labels = mark_labels(y)  # 把编号（文件名）换成标签
@@ -215,5 +217,6 @@ if __name__ == "__main__":
     y_pred = model.predict(features)
 
     show_confusion_matrix(x_test, y_test, y_pred, label_dict)
+    # TODO:输出图像以时间和方法作为文件名保存在visualization文件夹下
     print('The testing set accuracy:%f' % accuracy_score(
         y_true=y_test, y_pred=y_pred, normalize=True))
