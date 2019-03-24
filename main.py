@@ -11,7 +11,6 @@ from sklearn.utils.class_weight import compute_sample_weight
 from matplotlib.ticker import MultipleLocator
 
 from util import *
-from util.CAD_60 import ACTION_FILE_NAMES
 
 ORIGINAL_DATA_PATH = 'data/original'
 N_DIM = 100      # PCA降维后的维数
@@ -178,12 +177,8 @@ if __name__ == "__main__":
                         help='Directory of the processed input')
     args = parser.parse_args()
 
-    dataset = {}
-
-    for fn in ACTION_FILE_NAMES.keys():
-        dataset[fn] = np.load(os.path.join(args.input_dir, fn + '.npy'))
-        # TODO:输入同一化，统一为pkl文件
-        # TODO:key为类名，value为numpy.ndarray
+    dataset = pickle.load(
+        open(os.path.join(args.input_dir, 'input.pkl'), 'rb'))
 
     y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
     text_labels = mark_labels(y)  # 把编号（文件名）换成标签
