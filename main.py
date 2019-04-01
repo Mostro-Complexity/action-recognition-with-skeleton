@@ -114,15 +114,6 @@ def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
            partial_weights[0:i % batch_size])
 
 
-def save_label_dict(num_labels, text_labels, path):
-    label_dict = {}
-    for i in range(np.max(num_labels) + 1):
-        label_dict[i] = text_labels[num_labels == i][0]
-
-    pickle.dump(label_dict, open(path, 'wb'))
-    return label_dict
-
-
 def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
     matrix = confusion_matrix(y_true, y_pred)
     # Normalize by row
@@ -179,10 +170,10 @@ if __name__ == "__main__":
 
     dataset = pickle.load(
         open(os.path.join(args.input_dir, 'input.pkl'), 'rb'))
+    label_dict = pickle.load(
+        open(os.path.join(args.input_dir, 'label_dict.pkl'), 'rb'))
 
     y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
-    text_labels = mark_labels(y)  # 把编号（文件名）换成标签
-    y = LabelEncoder().fit_transform(text_labels)  # 字符串标签转为数字标签
 
     y_test, x_test, y_train, x_train = split_dataset(y, x, 0.2)  # 交叉验证并乱序
     print('Total classes number:%d' % (np.max(y_train) + 1))
@@ -195,17 +186,14 @@ if __name__ == "__main__":
             x_train, y_train, batch_size, N_DIM)
         model = train_and_save_multiple(iterator, np.unique(
             y_train), 'model/naive_bayes.pkl')
-        label_dict = save_label_dict(y, text_labels, 'model/label_dict.pkl')
     elif args.load_model:
         model = pickle.load(open('model/naive_bayes.pkl', 'rb'))
-        label_dict = pickle.load(open('model/label_dict.pkl', 'rb'))
         print('Model loaded.')
     else:
         features = integrate_features(x_train)
         model = train_and_save_once(features, y_train, 'model/naive_bayes.pkl')
         # Predict Output
         y_pred = model.predict(features)
-        label_dict = save_label_dict(y, text_labels, 'model/label_dict.pkl')
 
     features = integrate_features(x_test, N_DIM)
 

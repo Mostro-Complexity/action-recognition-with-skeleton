@@ -10,7 +10,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.utils import shuffle
 
-from util.CAD_60 import ACTION_FILE_NAMES
 
 def normalization(f_cc, f_cp, f_ci):
     """Normalize f_cc, f_cp, f_ci to [-1,1]
@@ -81,14 +80,16 @@ def scatter_samples(x, sample_size, step):
     `return` : labels and new samples. `shape`=`(M,)`
     """
     labels, samples = [], []
-    for k in x:
-        sample = x[k]
-        frame_num = sample.shape[0]
-        for i in range(0, frame_num, step):
-            if i + sample_size > frame_num:
+    orig_labels, orig_samples = x['label'], x['sample']
+
+    for i in range(len(orig_labels)):
+        frame_num = orig_samples[i].shape[0]
+
+        for j in range(0, frame_num, step):
+            if j + sample_size > frame_num:
                 break
-            labels.append(k)
-            samples.append(sample[i:i + sample_size, :])
+            labels.append(orig_labels[i])
+            samples.append(orig_samples[i][j:j + sample_size, :])
     return np.array(labels), np.array(samples)
 
 
@@ -117,10 +118,3 @@ def split_dataset(y, x, ratio):
 
     y_train, x_train = np.array(y_train), np.array(x_train)
     return np.array(y_test), np.array(x_test), y_train, x_train
-
-
-def mark_labels(indices):
-    """Convert filename to text label"""
-    mapped = [ACTION_FILE_NAMES[indices[i]] for i in range(indices.size)]
-
-    return np.array(mapped)

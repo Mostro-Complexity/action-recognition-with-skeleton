@@ -2,6 +2,7 @@ import os
 import pickle
 
 import numpy as np
+from sklearn.preprocessing import LabelEncoder
 
 ORIGINAL_DATA_PATH = 'data/original'
 INPUT_DATA_PATH = 'data/input'
@@ -99,32 +100,13 @@ def parse_skeleton_text(line):
         # pixel_x, pixel_y = pixel_from_coords(x, y, z)
         skeleton_coords.append([x, y, z])
 
-    # assert len(skeleton_coords) == 15, 'Actual length is: ' + str(len(output))
-    skeleton_coords = [
-        skeleton_coords[1],
-        skeleton_coords[0],
-        skeleton_coords[3],
-        skeleton_coords[4],
-        skeleton_coords[11],
-        skeleton_coords[5],
-        skeleton_coords[6],
-        skeleton_coords[12],
-        skeleton_coords[8],
-        skeleton_coords[13],
-        skeleton_coords[10],
-        skeleton_coords[14],
-        skeleton_coords[7],
-        skeleton_coords[9],
-        skeleton_coords[2],
-    ]
-
     skeleton_coords = np.array(skeleton_coords)
     return frame_num, skeleton_coords  # ",".join((str(v) for v in output))
 
 
 if __name__ == "__main__":
     filenames = list(ACTION_FILE_NAMES.keys())
-    dataset = {}
+    example, text_label = [], []
 
     for fn in filenames:
         with open(os.path.join(ORIGINAL_DATA_PATH, fn + '.txt'), 'r') as f:
@@ -136,7 +118,21 @@ if __name__ == "__main__":
 
             video_id = os.path.splitext(fn)[0]
 
-            dataset[fn] = all_coords
+            example.append(all_coords)
+            text_label.append(ACTION_FILE_NAMES[fn])
+
+    label = LabelEncoder().fit_transform(text_label)
+
+    label_dict = {}  # 文字标签到数字标签的对应
+    for i in range(len(text_label)):
+        label_dict[label[i]] = text_label[i]
+
+    dataset = {
+        'label': label,
+        'sample': example
+    }
 
     pickle.dump(dataset, open(os.path.join(
         INPUT_DATA_PATH, 'input.pkl'), 'wb'))
+    pickle.dump(label_dict, open(os.path.join(
+        INPUT_DATA_PATH, 'label_dict.pkl'), 'wb'))
