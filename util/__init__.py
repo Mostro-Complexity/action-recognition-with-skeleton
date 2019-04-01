@@ -8,9 +8,10 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from sklearn.utils import shuffle
+from numba import jit
 
 
+@jit(nogil=True)
 def normalization(f_cc, f_cp, f_ci):
     """Normalize f_cc, f_cp, f_ci to [-1,1]
 
@@ -28,6 +29,7 @@ def normalization(f_cc, f_cp, f_ci):
     return f_cc_std, f_cp_std, f_ci_std
 
 
+@jit(nogil=True)
 def extract_feature(joints):  # TODO:使用ctypes加速
     """Extract feature from single sample.  
     N is the number of sample.  

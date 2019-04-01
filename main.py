@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.class_weight import compute_sample_weight
 from matplotlib.ticker import MultipleLocator
+from sklearn.utils import shuffle
 
 from util import *
 
@@ -16,6 +17,7 @@ ORIGINAL_DATA_PATH = 'data/original'
 N_DIM = 100      # PCA降维后的维数
 
 
+@jit(nogil=True)
 def integrate_features(samples, n_dim=200):
     """Convert all samples to features with single time.
 
@@ -43,6 +45,7 @@ def integrate_features(samples, n_dim=200):
     return features
 
 
+@jit(nogil=True)
 def train_and_save_once(features, labels, path):
     """Train and save the model.
 
@@ -64,6 +67,7 @@ def train_and_save_once(features, labels, path):
     return model
 
 
+@jit(nogil=True)
 def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     # Create a Gaussian Classifier
     model = GaussianNB()
@@ -80,6 +84,7 @@ def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     return model
 
 
+@jit(nogil=True)
 def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
     sample_num, frame_num, joint_num, _ = samples.shape
 
