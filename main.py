@@ -1,6 +1,7 @@
 import argparse
 import os
 import pickle
+import json
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +15,6 @@ from sklearn.utils import shuffle
 from util import *
 
 ORIGINAL_DATA_PATH = 'data/original'
-N_DIM = 100      # PCA降维后的维数
 
 
 @jit(nogil=True)
@@ -173,6 +173,16 @@ def read_label_dict(data_dir):
     return label_dict
 
 
+def read_config(path):
+    with open(path, 'r') as fp:
+        param = json.loads(fp.read())
+        return (param['n_dim'],
+                param['batch_size'],
+                param['sample_size'],
+                param['step'],
+                param['train_test_rate'])
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Action recognition.')
@@ -182,23 +192,29 @@ if __name__ == "__main__":
                         help='Trained model using online learning')
     parser.add_argument('--input-dir', type=str, default='data/input',
                         help='Directory of the processed input')
+    parser.add_argument('--config', type=str, default='config.json',
+                        help='Path of configuration file.')
     args = parser.parse_args()
 
     dataset = pickle.load(
         open(os.path.join(args.input_dir, 'input.pkl'), 'rb'))
     label_dict = read_label_dict(args.input_dir)
 
-    y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
+    N_DIM, BATCH_SIZE, SAMPLE_SIZE, STEP, TRAIN_TEST_RATE = read_config(
+        args.config)
 
-    y_test, x_test, y_train, x_train = split_dataset(y, x, 0.2)  # 交叉验证并乱序
+    y, x = scatter_samples(dataset, SAMPLE_SIZE, STEP)  # 大样本分散为小样本
+
+    y_test, x_test, y_train, x_train = split_dataset(
+        y, x, TRAIN_TEST_RATE)  # 交叉验证并乱序
     print('Total classes number:%d' % np.unique(y_train).size)
 
     if args.load_model and args.partial_fit:
-        batches_num, batch_size = x_train.shape[0], 1000
-        print('Total batches number:%d' % (batches_num // batch_size + 1))
+        batches_num = x_train.shape[0]
+        print('Total batches number:%d' % (batches_num // BATCH_SIZE + 1))
 
         iterator = feat_batches_iterator(
-            x_train, y_train, batch_size, N_DIM)
+            x_train, y_train, BATCH_SIZE, N_DIM)
         model = train_and_save_multiple(iterator, np.unique(
             y_train), 'model/naive_bayes.pkl')
     elif args.load_model:
