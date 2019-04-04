@@ -106,7 +106,7 @@ def parse_skeleton_text(line):
 
 if __name__ == "__main__":
     filenames = list(ACTION_FILE_NAMES.keys())
-    example, text_label = [], []
+    sample, text_label = [], []
 
     for fn in filenames:
         with open(os.path.join(ORIGINAL_DATA_PATH, fn + '.txt'), 'r') as f:
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
             video_id = os.path.splitext(fn)[0]
 
-            example.append(all_coords)
+            sample.append(all_coords)
             text_label.append(ACTION_FILE_NAMES[fn])
 
     label = LabelEncoder().fit_transform(text_label)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     dataset = {
         'label': label,
-        'sample': example
+        'sample': sample
     }
 
     pickle.dump(dataset, open(os.path.join(
