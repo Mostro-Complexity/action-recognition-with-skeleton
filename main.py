@@ -119,7 +119,7 @@ def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
            partial_weights[0:i % batch_size])
 
 
-def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
+def show_confusion_matrix(x_test, y_true, y_pred, label_dict=None):  # TODO:check out
     matrix = confusion_matrix(y_true, y_pred)
     # Normalize by row
     matrix = matrix.astype('float') / matrix.sum(axis=1)[:, np.newaxis]
@@ -145,7 +145,8 @@ def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
                         va='center', ha='center', color='white')
 
     labels = ['']
-    labels.extend([label_dict[i] for i in range(len(label_dict))])
+    if label_dict is not None:
+        labels.extend([label_dict[i] for i in range(len(label_dict))])
 
     plt.subplots_adjust(left=0.2, right=0.9, top=0.9, bottom=0.2)
     ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -162,6 +163,16 @@ def show_confusion_matrix(x_test, y_true, y_pred, label_dict):
     plt.savefig('confusion_matrix.jpg')
 
 
+def read_label_dict(data_dir):
+    label_dict = None
+    try:
+        f = open(os.path.join(args.input_dir, 'label_dict.pkl'), 'rb')
+        label_dict = pickle.load(f)
+    except FileNotFoundError as e:
+        pass
+    return label_dict
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Action recognition.')
@@ -175,13 +186,12 @@ if __name__ == "__main__":
 
     dataset = pickle.load(
         open(os.path.join(args.input_dir, 'input.pkl'), 'rb'))
-    label_dict = pickle.load(
-        open(os.path.join(args.input_dir, 'label_dict.pkl'), 'rb'))
+    label_dict = read_label_dict(args.input_dir)
 
     y, x = scatter_samples(dataset, 900, 10)  # 大样本分散为小样本
 
     y_test, x_test, y_train, x_train = split_dataset(y, x, 0.2)  # 交叉验证并乱序
-    print('Total classes number:%d' % (np.max(y_train) + 1))
+    print('Total classes number:%d' % np.unique(y_train).size)
 
     if args.load_model and args.partial_fit:
         batches_num, batch_size = x_train.shape[0], 1000
