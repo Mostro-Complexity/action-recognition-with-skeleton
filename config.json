@@ -1,7 +1,7 @@
 {
-    "n_dim": 30,
-    "sample_size": 40,
-    "step": 10,
+    "n_dim": 150,
+    "sample_size":50,
+    "step": 1,
     "train_test_rate": 0.2,
     "batch_size": 1000
 }

@@ -24,7 +24,7 @@ def integrate_features(samples, n_dim=200):
     `samples` : sample array, which contains N samples. shape=(N,)
     `return` : feature array, which contains N features. shape=(N,)
     """
-    sample_num, frame_num, joint_num, _ = samples.shape
+    sample_num, frame_num, _, _ = samples.shape
     features = np.empty((sample_num, frame_num * n_dim), dtype=np.float32)
 
     for i in range(sample_num):  # 对每个训练（测试）样本提取特征
@@ -38,7 +38,9 @@ def integrate_features(samples, n_dim=200):
         f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
 
         f_norm = np.hstack((f_cc, f_cp, f_ci))
-        f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
+        # f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
+        f_norm = defined_PCA(f_norm, n_dim=n_dim)
+
         f_norm = f_norm.reshape(-1)
         features[i] = f_norm
 
@@ -67,7 +69,7 @@ def train_and_save_once(features, labels, path):
     return model
 
 
-@jit(nogil=True)
+# @jit(nogil=True)
 def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     # Create a Gaussian Classifier
     model = GaussianNB()
@@ -84,9 +86,9 @@ def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     return model
 
 
-@jit(nogil=True)
+# @jit(nogil=True)
 def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
-    sample_num, frame_num, joint_num, _ = samples.shape
+    sample_num, frame_num, _, _ = samples.shape
 
     labels, samples = shuffle(labels, samples)  # 打乱顺序
     weights = compute_sample_weight('balanced', labels)
@@ -105,7 +107,8 @@ def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
         f_cc, f_cp, f_ci = normalization(f_cc, f_cp, f_ci)
 
         f_norm = np.hstack((f_cc, f_cp, f_ci))
-        f_norm = PCA(n_components=n_dim).fit_transform(f_norm)
+        # f_norm = PCA(n_components=500, svd_solver='full').fit_transform(f_norm)
+        f_norm = defined_PCA(f_norm, n_dim=n_dim)
 
         partial_features[i % batch_size] = f_norm.reshape(-1)
         partial_labels[i % batch_size] = labels[i]

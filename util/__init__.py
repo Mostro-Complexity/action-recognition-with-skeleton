@@ -2,13 +2,14 @@ import os
 import pickle
 
 import numpy as np
+from numba import jit
+from scipy import linalg
 from scipy.special import comb, perm
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
-from numba import jit
 
 
 @jit(nogil=True)
@@ -120,3 +121,25 @@ def split_dataset(y, x, ratio):
 
     y_train, x_train = np.array(y_train), np.array(x_train)
     return np.array(y_test), np.array(x_test), y_train, x_train
+
+
+@jit(nogil=True)
+def defined_PCA(feature, n_dim=None):
+    n, _ = feature.shape
+    U, S, V = linalg.svd(feature, full_matrices=True)
+    # U, V = svd_flip(U, V)
+
+    V_max_ind = np.argmax(np.abs(V.T), axis=0)  # find max element each column
+    V_sign = np.sign(V[np.arange(V_max_ind.size), V_max_ind])
+    V *= V_sign[:, None]
+
+    U *= S[None, :]
+    U *= V_sign[None, :n]
+
+    # scipy.io.savemat('V.mat', {'V': V})
+    f_after_PCA = np.dot(feature, V.T)
+
+    if n_dim is None:
+        return f_after_PCA
+    else:
+        return f_after_PCA[:, :n_dim]
