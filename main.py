@@ -69,7 +69,7 @@ def train_and_save_once(features, labels, path):
     return model
 
 
-# @jit(nogil=True)
+@jit(nogil=True)
 def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     # Create a Gaussian Classifier
     model = GaussianNB()
@@ -86,7 +86,7 @@ def train_and_save_multiple(batches_iter, classes, path, sample_weight=None):
     return model
 
 
-# @jit(nogil=True)
+@jit(nogil=True)
 def feat_batches_iterator(samples, labels, batch_size=1000, n_dim=200):
     sample_num, frame_num, _, _ = samples.shape
 

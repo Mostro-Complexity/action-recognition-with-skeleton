@@ -31,7 +31,7 @@ def normalization(f_cc, f_cp, f_ci):
 
 
 @jit(nogil=True)
-def extract_feature(joints):  # TODO:使用ctypes加速
+def extract_feature(joints):
     """Extract feature from single sample.  
     N is the number of sample.  
 
