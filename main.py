@@ -1,18 +1,22 @@
 import argparse
+import json
 import os
 import pickle
-import json
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.metrics import accuracy_score, confusion_matrix
-from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.class_weight import compute_sample_weight
 from matplotlib.ticker import MultipleLocator
+from numba import jit
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import shuffle
+from sklearn.utils.class_weight import compute_sample_weight
 
-from util import *
+from util.dataset.normalization import scatter_samples
+from util.dataset.test import split_dataset
+from util.feature.eigen_joints import (defined_PCA, extract_feature,
+                                       normalization)
 
 ORIGINAL_DATA_PATH = 'data/original'
 
