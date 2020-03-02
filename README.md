@@ -1,3 +1,5 @@
+**This code has a theoretical error. Please do not use it. This code is used as a code template.**
+
 # Action Recognition With Skeleton 
 > Sexy model using online learning
 
